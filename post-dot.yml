@@ -1,0 +1,16 @@
+- hosts: localhost
+  connection: local
+
+  handlers:
+    - name: Install nvm
+      include_tasks: nvm.yml
+
+  tasks:
+    - name: Install homebrew packages after doing stow
+      community.general.homebrew:
+        name:
+          - fzf
+        state: present
+
+    - command: "true"
+      notify: Install nvm

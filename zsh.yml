@@ -1,0 +1,65 @@
+- hosts: localhost
+  name: Zsh
+  vars:
+    zsh_path: ~/.oh-my-zsh
+    zsh_autosuggestions_path: "{{ lookup('env', 'ZSH_CUSTOM') | default('~/.oh-my-zsh/custom', true) }}/plugins/zsh-autosuggestions"
+
+  tasks:
+    - name: Install zsh
+      community.general.homebrew:
+        name:
+          - zsh
+        state: present
+      tags:
+        - zsh
+
+    - name: Change shell to zsh
+      become: true
+      ansible.builtin.shell: chsh -s $(which zsh)
+      register: chsh_zsh
+      changed_when: chsh_zsh.rc == 0 # this is needed to avoid ansible-lint error when running shell commands
+      tags:
+        - zsh
+
+    - name: Check oh-my-zsh is already installed
+      ansible.builtin.stat:
+        path: "{{ zsh_path }}"
+        get_checksum: false
+      register: omz_dir
+
+    - name: Install oh-my-zsh
+      ansible.builtin.shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      register: oh_my_zsh
+      changed_when: oh_my_zsh.rc == 0 # this is needed to avoid ansible-lint error when running shell commands
+      when: not omz_dir.stat.exists
+      tags:
+        - zsh
+
+    - name: Check zsh-autosuggestions is already installed
+      ansible.builtin.stat:
+        path: "{{ zsh_autosuggestions_path }}"
+        get_checksum: false
+      register: omz_autosuggest_dir
+
+    - name: Install zsh-autosuggestions
+      ansible.builtin.git: # noqa: latest
+        repo: "https://github.com/zsh-users/zsh-autosuggestions.git"
+        dest: "{{ zsh_autosuggestions_path }}"
+      when: not omz_autosuggest_dir.stat.exists
+      tags:
+        - zsh
+
+    - name: Remove default .zshrc
+      ansible.builtin.command: mv $HOME/.zshrc $HOME/.zshrc.org
+      args:
+        removes: $HOME/.zshrc
+        creates: $HOME/.zshrc.org
+      tags:
+        - zsh
+
+    - name: Move .zshrc.pre-oh-my-zsh to .zshrc
+      ansible.builtin.command: mv $HOME/.zshrc.pre-oh-my-zsh $HOME/.zshrc
+      args:
+        removes: $HOME/.zshrc.pre-oh-my-zsh
+      tags:
+        - zsh

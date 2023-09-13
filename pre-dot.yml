@@ -1,0 +1,37 @@
+- hosts: localhost
+  connection: local
+
+  handlers:
+    - name: Install first packages
+      include_tasks: homebrew_first.yml
+
+  pre_tasks:
+    - name: Check if homebrew is already installed
+      stat:
+        path: "{{ brewpath | default('/home/linuxbrew/.linuxbrew/bin/brew') }}"
+      register: homebrew_check
+
+    - name: If homebrew is not installed, exit here
+      fail:
+        msg: Homebrew is missing. Exiting...
+      when:
+        - not homebrew_check.stat.exists
+
+  tasks:
+    - name: Install essential packages required by homebrew
+      become: true
+      ansible.builtin.apt:
+        name:
+          - build-essential
+      when: ansible_facts['os_family'] == "Debian"
+      tags:
+        - base
+
+    - name: Update homebrew
+      community.general.homebrew:
+        update_homebrew: true
+      when: homebrew_check.stat.exists
+
+    - command: "true"
+      notify: Install first packages
+      when: homebrew_check.stat.exists

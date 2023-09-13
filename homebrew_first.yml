@@ -1,0 +1,15 @@
+- name: Install first homebrew packages before doing stow
+  community.general.homebrew:
+    name:
+      - gcc # install gcc first, because homebrew recommends it
+      - direnv
+      # On Linux, brew installation requires git. So no need to install it using brew
+      # - git
+      - ffmpeg
+      - jq
+      - lua-language-server
+      - stow
+      - tmux
+      - tree
+      - youtube-dl
+    state: present
