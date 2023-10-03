@@ -1,5 +1,6 @@
 #!/usr/bin/env -S bash -e
 
+# TODO: sudo is not needed for installing in Mac
 if [[ "$EUID" -ne 0 ]]; then
   echo "Please run the script as sudo or root."
   exit 1

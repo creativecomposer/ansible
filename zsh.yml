@@ -5,6 +5,7 @@
     zsh_autosuggestions_path: "{{ lookup('env', 'ZSH_CUSTOM') | default('~/.oh-my-zsh/custom', true) }}/plugins/zsh-autosuggestions"
 
   tasks:
+    # TODO: Install zsh only if it is not already installed
     - name: Install zsh
       community.general.homebrew:
         name:
@@ -13,6 +14,7 @@
       tags:
         - zsh
 
+    # Change shell to zsh only if zsh is not already the default shell
     - name: Change shell to zsh
       become: true
       ansible.builtin.shell: chsh -s $(which zsh)
