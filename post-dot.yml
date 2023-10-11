@@ -9,7 +9,14 @@
     - name: Install homebrew packages after doing stow
       community.general.homebrew:
         name:
+          - direnv
+          - ffmpeg
           - fzf
+          - jq
+          - lua-language-server
+          - ripgrep # telescope.nvim uses this to list files.
+          - tree
+          - youtube-dl
         state: present
 
     - command: "true"
